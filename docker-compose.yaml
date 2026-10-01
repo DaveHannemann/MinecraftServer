@@ -1,0 +1,11 @@
+services:
+  mc-server:
+    build: .
+    ports:
+      - "8888:25565"
+    environment:
+      - MEMORY: "4G"
+    volumes:
+      - ./local_data:/minecraft
+    command: ["sh", "-c", "java -Xmx$${MEMORY:-4G} -Xms$${MEMORY:-4G} -jar /server/server.jar nogui"]
+    restart: unless-stopped
