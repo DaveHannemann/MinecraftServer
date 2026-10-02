@@ -1,11 +1,26 @@
 services:
   mc-server:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: minecraft-server:latest
+
     ports:
-      - "8888:25565"
+      - "${HOST_PORT}:${SERVER_PORT}"
+
     environment:
-      - MEMORY: "4G"
+      MEMORY: ${MEMORY}
+      EULA: ${EULA}
+      MAX_PLAYERS: ${MAX_PLAYERS}
+      WHITE_LIST: ${WHITE_LIST}
+      DIFFICULTY: ${DIFFICULTY}
+      GAMEMODE: ${GAMEMODE}
+      MOTD: ${MOTD}
+
     volumes:
-      - ./local_data:/minecraft
-    command: ["sh", "-c", "java -Xmx$${MEMORY:-4G} -Xms$${MEMORY:-4G} -jar /server/server.jar nogui"]
+      - minecraft-data:/minecraft
+
     restart: unless-stopped
+
+volumes:
+  minecraft-data:
