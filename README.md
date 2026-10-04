@@ -1,29 +1,24 @@
 # Minecraft Server with Docker
 
-## Table of Contents
-
-* [Description](#description)
-* [Quickstart](#quickstart)
-
-  * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-* [Usage](#usage)
-
-  * [Project Structure](#project-structure)
-  * [Configuration](#configuration)
-  * [Port Configuration](#port-configuration)
-  * [Persistent Data](#persistent-data)
-  * [Server Memory](#server-memory)
-  * [Stopping and Restarting](#stopping-and-restarting)
-* [Technologies](#technologies)
-
-## Description
-
 This repository contains a self-hosted Minecraft Java Edition server running in a custom Docker container.
 
-The Docker image is built from an Eclipse Temurin Java 25 base image and uses the official Minecraft server application (`server.jar`). Docker Compose is used to configure and run the Minecraft server, expose the required port, persist server data, and automatically restart the container if it terminates unexpectedly.
+The Docker image is built from an Eclipse Temurin Java 25 base image and uses the official Minecraft server application (`server.jar`). Docker Compose is used to build and run the Minecraft server, configure the server through environment variables, expose the required port, persist server data using a named volume, and automatically restart the container if it terminates unexpectedly.
 
 The project was created to practice containerization with Docker and Docker Compose without using a pre-built Minecraft Docker image.
+
+## Table of Contents
+
+- [Quickstart](#quickstart)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+  - [Project Structure](#project-structure)
+  - [Configuration](#configuration)
+  - [Port Configuration](#port-configuration)
+  - [Persistent Data](#persistent-data)
+  - [Server Memory](#server-memory)
+  - [Stopping and Restarting](#stopping-and-restarting)
+- [Technologies](#technologies)
 
 ## Quickstart
 
@@ -31,9 +26,9 @@ The project was created to practice containerization with Docker and Docker Comp
 
 Before starting the server, make sure the following software is installed:
 
-* [Docker](https://www.docker.com/)
-* Docker Compose (included with current Docker installations)
-* Git
+- [Docker](https://www.docker.com/)
+- Docker Compose (included with current Docker installations)
+- Git
 
 The repository also contains the required Minecraft `server.jar`.
 
@@ -42,45 +37,39 @@ The repository also contains the required Minecraft `server.jar`.
 Clone the repository:
 
 ```bash
-git clone <YOUR-REPOSITORY-URL>
-cd <YOUR-REPOSITORY-DIRECTORY>
+git clone https://github.com/DaveHannemann/MinecraftServer.git
+cd MinecraftServer
+```
+
+Create the environment configuration:
+
+```bash
+cp .env.example .env
+```
+
+Adjust the values in `.env` according to your requirements.
+
+Make sure that the Minecraft EULA is accepted:
+
+```env
+EULA=true
 ```
 
 Build and start the Minecraft server:
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
-On the first start, Minecraft creates the required server files inside the `local_data` directory.
-
-The Minecraft EULA must be accepted before the server can start. Open:
-
-```text
-local_data/eula.txt
-```
-
-and change:
-
-```text
-eula=false
-```
-
-to:
-
-```text
-eula=true
-```
-
-Start the server again:
+Check the server logs:
 
 ```bash
-docker compose up
+docker compose logs -f
 ```
 
-The Minecraft server is then available on port `8888` of the Docker host.
+The Minecraft server is then available on the configured host port.
 
-For a local installation, connect with:
+With the default configuration, connect using:
 
 ```text
 localhost:8888
@@ -96,108 +85,200 @@ The main project files are organized as follows:
 .
 ├── Dockerfile
 ├── docker-compose.yaml
+├── entrypoint.sh
 ├── server/
 │   └── server.jar
-├── local_data/
+├── .env.example
+├── .gitignore
 └── README.md
 ```
 
-* `Dockerfile` defines the custom Minecraft Docker image.
-* `docker-compose.yaml` defines and configures the `mc-server` service.
-* `server/server.jar` contains the Minecraft server application.
-* `local_data/` contains persistent Minecraft server data and is not committed to Git.
-* `README.md` contains the project documentation.
+- `Dockerfile` defines the custom Minecraft Docker image.
+- `docker-compose.yaml` defines and configures the `mc-server` service.
+- `entrypoint.sh` prepares the Minecraft server configuration and starts the server.
+- `server.jar` contains the official Minecraft server application.
+- `.env.example` provides an example configuration for the required environment variables.
+- `.gitignore` contains files and directories that should not be committed to Git.
+- `README.md` contains the project documentation.
+
+Minecraft server data is stored in a Docker-managed named volume and is therefore not part of the repository.
 
 ### Configuration
 
-The Minecraft server is configured through `docker-compose.yaml`.
+The Minecraft server is configured through environment variables.
 
-The current environment configuration contains the server memory setting:
+Create the local `.env` file from the provided example:
 
-```yaml
-environment:
-  MEMORY: "4G"
+```bash
+cp .env.example .env
 ```
 
-The `MEMORY` variable controls the amount of Java heap memory allocated to the Minecraft server.
+The available configuration variables include:
 
-The default value is `4G`. If a different amount of memory is required, the value can be changed, for example:
-
-```yaml
-environment:
-  MEMORY: "2G"
+```env
+MEMORY=2G
+EULA=true
+WHITE_LIST=false
+MAX_PLAYERS=10
+DIFFICULTY=normal
+GAMEMODE=survival
+MOTD=My Minecraft Server
+SERVER_PORT=25565
+HOST_PORT=8888
 ```
 
-or:
+#### EULA
 
-```yaml
-environment:
-  MEMORY: "6G"
+The Minecraft EULA must be explicitly accepted:
+
+```env
+EULA=true
 ```
 
-The configured value is used for both the initial and maximum Java heap size.
+If `EULA` is not set to `true`, the entrypoint script stops the container and displays an error message.
 
-> Make sure the Docker host has enough available memory for the configured value.
+#### Whitelist
+
+The whitelist can be enabled or disabled using:
+
+```env
+WHITE_LIST=false
+```
+
+Set it to `true` if only whitelisted players should be allowed to join.
+
+#### Maximum Players
+
+The maximum number of players can be configured using:
+
+```env
+MAX_PLAYERS=10
+```
+
+#### Difficulty
+
+Available Minecraft difficulty values are:
+
+```text
+peaceful
+easy
+normal
+hard
+```
+
+For example:
+
+```env
+DIFFICULTY=normal
+```
+
+#### Gamemode
+
+Available gamemodes are:
+
+```text
+survival
+creative
+adventure
+spectator
+```
+
+For example:
+
+```env
+GAMEMODE=survival
+```
+
+#### MOTD
+
+The server name displayed in the Minecraft server list can be configured using:
+
+```env
+MOTD=My Minecraft Server
+```
 
 ### Port Configuration
 
-The Docker Compose configuration maps port `8888` on the host to the default Minecraft server port `25565` inside the container:
+The Minecraft server uses two port variables:
+
+```env
+SERVER_PORT=25565
+HOST_PORT=8888
+```
+
+`SERVER_PORT` defines the port used by Minecraft inside the container.
+
+`HOST_PORT` defines the port exposed by Docker on the host.
+
+Docker Compose maps these ports using:
 
 ```yaml
 ports:
-  - "8888:25565"
+  - "${HOST_PORT}:${SERVER_PORT}"
 ```
 
-The first value is the externally accessible host port. The second value is the port used by the Minecraft server inside the container.
+With the default configuration, the mapping is:
 
-For example, changing:
-
-```yaml
-ports:
-  - "8888:25565"
+```text
+8888 → 25565
 ```
 
-to:
+For a local installation, connect to:
 
-```yaml
-ports:
-  - "25565:25565"
+```text
+localhost:8888
 ```
-
-would make the server accessible through port `25565` on the host instead.
 
 ### Persistent Data
 
-Minecraft server data is stored using a bind mount:
+Minecraft server data is stored in a Docker-managed named volume:
 
 ```yaml
 volumes:
-  - ./local_data:/minecraft
+  - minecraft-data:/minecraft
 ```
 
-This ensures that the Minecraft world, server configuration, logs, and other generated data are stored on the host filesystem rather than only inside the container.
+The named volume stores persistent Minecraft data such as:
 
-The data therefore remains available when the container is recreated.
+- Minecraft worlds
+- `server.properties`
+- `eula.txt`
+- server logs
+- other generated server data
 
-The `local_data` directory should not be committed to the Git repository because it contains generated runtime data and the Minecraft world.
+The data remains available when the container is stopped, restarted, or recreated.
+
+The named volume can be viewed with:
+
+```bash
+docker volume ls
+```
+
+> Do not use `docker compose down -v` unless the persistent Minecraft data should be deleted. The `-v` option removes the Docker volume and therefore deletes the stored server data.
 
 ### Server Memory
 
-The Docker Compose configuration passes the memory setting to the Minecraft server.
+The Java heap size is configured through the `MEMORY` environment variable:
 
-The Minecraft server is started with:
-
-```text
--Xmx4G
--Xms4G
+```env
+MEMORY=2G
 ```
 
-when the default `MEMORY=4G` configuration is used.
+The entrypoint starts the Minecraft server using:
 
-* `-Xmx` defines the maximum Java heap size.
-* `-Xms` defines the initial Java heap size.
+```text
+-Xmx2G
+-Xms2G
+```
 
-The value can be adjusted through the `MEMORY` environment variable as described above.
+when `MEMORY=2G` is configured.
+
+- `-Xmx` defines the maximum Java heap size.
+- `-Xms` defines the initial Java heap size.
+
+The same value is used for both settings.
+
+Make sure the Docker host has enough available memory for the configured value.
 
 ### Stopping and Restarting
 
@@ -207,16 +288,22 @@ To stop the server:
 docker compose down
 ```
 
-To start the existing container again:
+To start the server again:
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
-To rebuild the Docker image after changing the `Dockerfile`:
+To restart the running container:
 
 ```bash
-docker compose up --build
+docker compose restart
+```
+
+To rebuild the Docker image after changing the `Dockerfile` or other build-related files:
+
+```bash
+docker compose up --build -d
 ```
 
 The server uses:
@@ -225,16 +312,17 @@ The server uses:
 restart: unless-stopped
 ```
 
-This causes Docker to restart the container if the Minecraft process terminates unexpectedly.
+This causes Docker to automatically restart the container if the Minecraft process terminates unexpectedly.
 
-The persistent data in `local_data` is not removed when the container is stopped or recreated.
+The persistent Minecraft data stored in the named volume is not removed when the container is stopped or recreated.
 
 ## Technologies
 
-* Docker
-* Docker Compose
-* Eclipse Temurin 25
-* Java 25
-* Minecraft Java Edition
-* Minecraft Server 26.3
-* Git / GitHub
+- Docker
+- Docker Compose
+- Eclipse Temurin 25
+- Java 25
+- Minecraft Java Edition
+- Minecraft Server 26.3
+- Shell scripting
+- Git / GitHub
