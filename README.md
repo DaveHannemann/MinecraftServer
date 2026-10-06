@@ -37,7 +37,7 @@ The repository also contains the required Minecraft `server.jar`.
 Clone the repository:
 
 ```bash
-git clone https://github.com/DaveHannemann/MinecraftServer.git
+git clone git@github.com:DaveHannemann/MinecraftServer.git
 cd MinecraftServer
 ```
 
@@ -47,6 +47,7 @@ Create the environment configuration:
 cp .env.example .env
 ```
 
+[!NOTE]
 Adjust the values in `.env` according to your requirements.
 
 Make sure that the Minecraft EULA is accepted:
@@ -72,7 +73,7 @@ The Minecraft server is then available on the configured host port.
 With the default configuration, connect using:
 
 ```text
-localhost:8888
+<your_ip>:8888
 ```
 
 ## Usage
