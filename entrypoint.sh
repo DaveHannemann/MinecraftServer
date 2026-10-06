@@ -3,12 +3,6 @@
 MEMORY="${MEMORY:-2G}"
 SERVER_PORT="${SERVER_PORT:-25565}"
 
-if [ "${EULA}" != "true" ]; then
-    echo "ERROR: You must accept the Minecraft EULA."
-    echo "Set EULA=true in the .env file."
-    exit 1
-fi
-
 if [ ! -f /minecraft/server.properties ]; then
     cat > /minecraft/server.properties <<EOF
 server-port=${SERVER_PORT}
