@@ -47,8 +47,8 @@ Create the environment configuration:
 cp .env.example .env
 ```
 
-[!NOTE]
-Adjust the values in `.env` according to your requirements.
+>[!NOTE]
+>Adjust the values in `.env` according to your requirements.
 
 Make sure that the Minecraft EULA is accepted:
 
