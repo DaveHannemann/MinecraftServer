@@ -1,0 +1,26 @@
+services:
+  mc-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: minecraft-server:latest
+
+    ports:
+      - "${HOST_PORT}:${SERVER_PORT}"
+
+    environment:
+      MEMORY: ${MEMORY}
+      EULA: ${EULA}
+      MAX_PLAYERS: ${MAX_PLAYERS}
+      WHITE_LIST: ${WHITE_LIST}
+      DIFFICULTY: ${DIFFICULTY}
+      GAMEMODE: ${GAMEMODE}
+      MOTD: ${MOTD}
+
+    volumes:
+      - minecraft-data:/minecraft
+
+    restart: unless-stopped
+
+volumes:
+  minecraft-data:
